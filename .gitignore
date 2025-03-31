@@ -1,0 +1,12 @@
+# Ignore all homework folders
+hw*/
+hw2*/
+hw3*/
+
+# Ignore python dependencies
+*.egg-info
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
