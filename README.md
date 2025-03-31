@@ -28,10 +28,22 @@ This package provides a framework for solving optimization problems using variou
 
 3. **`functions.py`**:
    - Provides test functions, their gradients, and Hessians, including:
-     - Rosenbrock function$$f(x) = (1 - x_0)^2 + 100 (x_1 - x_0^2)^2$$
-     - Quadratic function$$f(x) = \frac{1}{2} x^T A x - b^T x + c$$
-     - Function 2$$f(x) = \sum_{i=1}^{3} \left( y_i - x_0 \cdot \left( 1 - x_1^{i+1} \right) \right)^2$$
-     - Function 3$$f(x) = \frac{\exp(x_0) - 1}{\exp(x_0) + 1} + 0.1 \exp(-x_0) + \sum_{i=1}^{n} (x_i - 1)^4$$
+     - Rosenbrock function
+     ```latex
+     f(x) = (1 - x_0)^2 + 100 (x_1 - x_0^2)^2
+     ```
+     - Quadratic function
+     ```latex
+     f(x) = \frac{1}{2} x^T A x - b^T x + c
+     ```
+     - Function 2
+     ```latex
+     f(x) = \sum_{i=1}^{3} \left( y_i - x_0 \cdot \left( 1 - x_1^{i+1} \right) \right)^2
+     ```
+     - Function 3
+     ```latex
+     f(x) = \frac{\exp(x_0) - 1}{\exp(x_0) + 1} + 0.1 \exp(-x_0) + \sum_{i=1}^{n} (x_i - 1)^4
+     ```
 
 
 ---
