@@ -1,8 +1,8 @@
 # Ignore all homework folders
-hw*/
-hw2*/
-hw3*/
-hw4*/
+# hw*/
+# hw2*/
+# hw3*/
+# hw4*/
 
 # Ignore python dependencies
 *.egg-info
