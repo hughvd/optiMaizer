@@ -5,7 +5,8 @@ import functions
 
 
 def optSolver(problem, method, options):
-    """Function that runs a chosen algorithm on a chosen problem
+    """Function that runs a chosen ML algorithm on a chosen problem
+    over a set of data points.
 
     Inputs:
         problem, method, options (structs)
@@ -16,30 +17,14 @@ def optSolver(problem, method, options):
     # Initialize history lists
     f_history = []
 
+    # Get data
+    X = problem.X
+
+
     # Compute initial function/gradient/Hessian
     x = problem.x0
     f = problem.compute_f(x)
     g = problem.compute_g(x)
-
-    # Handle Hessian cases
-    if method.name == "Newton" or method.name == "ModifiedNewton":
-        H = problem.compute_H(x)
-    elif method.name == "BFGS":
-        n = len(x)
-        # Use custom H_0 if provided, otherwise use identity
-        if "H_0" in method.options:
-            H = method.options["H_0"]
-        else:
-            H = np.eye(n)
-    elif method.name == "L-BFGS":
-        from collections import deque
-
-        n = len(x)
-        # Use given memory size, otherwize use 6
-        m = method.options.get("memory_size", 6)
-        # Use deques for effecient maintence of memory
-        s_list = deque(maxlen=m)
-        y_list = deque(maxlen=m)
 
     norm_g = np.linalg.norm(g, ord=np.inf)
 
@@ -57,27 +42,6 @@ def optSolver(problem, method, options):
             case "GradientDescent":
                 x_new, f_new, g_new, d, alpha = algorithms.GDStep(
                     x, f, g, problem, method, options
-                )
-
-            case "Newton":
-                x_new, f_new, g_new, H_new, d, alpha = algorithms.NewtonStep(
-                    x, f, g, H, problem, method, options
-                )
-
-            case "ModifiedNewton":
-                x_new, f_new, g_new, H_new, d, alpha = algorithms.ModifiedNewtonStep(
-                    x, f, g, H, problem, method, options
-                )
-
-            case "BFGS":
-                x_new, f_new, g_new, H_new, d, alpha, n_skipped = algorithms.BFGSStep(
-                    x, f, g, H, n_skipped, problem, method, options
-                )
-
-            case "L-BFGS":
-                # s_list and y_list are updated in the L-BFGSStep function (pass by reference)
-                x_new, f_new, g_new, d, alpha, n_skipped = algorithms.L_BFGSStep(
-                    x, f, g, s_list, y_list, n_skipped, problem, method, options
                 )
 
             case _:
