@@ -1,6 +1,6 @@
 # OptiMaizer
 
-This package provides a framework for solving optimization problems using various algorithms. This code was written for the class Math 562 / IOE 511: Continuous Optimization. 
+This package provides a framework for solving optimization problems using various algorithms. This code was written for the class Math 562 / IOE 511: Continuous Optimization Methods. 
 
 ---
 
