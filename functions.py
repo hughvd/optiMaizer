@@ -87,7 +87,7 @@ def quad_Hess(x, A, b, c):
 
 
 def f2_func(x):
-    """Function that computes the function value for function 2
+    r"""Function that computes the function value for function 2
         f(x) = sum_{i=1}^3 (y_i - x_0 * (1 - x_1^{i}))^2
     Input:
         x \in R^2
@@ -102,7 +102,7 @@ def f2_func(x):
 
 
 def f2_grad(x):
-    """Function that computes the gradient of function 2
+    r"""Function that computes the gradient of function 2
 
     Input:
         x \in R^2
@@ -120,7 +120,7 @@ def f2_grad(x):
 
 
 def f2_Hess(x):
-    """Function that computes the Hessian of function 2
+    r"""Function that computes the Hessian of function 2
 
     Input:
         x \in R^2
@@ -151,7 +151,7 @@ def f2_Hess(x):
 
 
 def f3_func(x):
-    """Function that computes the function value for function 3
+    r"""Function that computes the function value for function 3
 
     Input:
         x \in R^n
@@ -165,7 +165,7 @@ def f3_func(x):
 
 
 def f3_grad(x):
-    """Function that computes the gradient of function 3"
+    r"""Function that computes the gradient of function 3"
 
     Input:
         x \in R^n
@@ -180,7 +180,7 @@ def f3_grad(x):
 
 
 def f3_Hess(x):
-    """Function that computes the Hessian of function 3
+    r"""Function that computes the Hessian of function 3
 
     Input:
         x \in R^n
@@ -194,3 +194,4 @@ def f3_Hess(x):
     for i in range(1, len(x)):
         H[i, i] = 12 * (x[i] - 1.0) ** 2
     return H
+
