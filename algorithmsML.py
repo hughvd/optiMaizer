@@ -16,7 +16,7 @@ def compute_step_size(X, y, w, d, loss, g, k, problem, method):
             loss_new = problem.compute_f(X, y, w_new)
             
             # Backtracking
-            while loss_new > loss + c1 * alpha * g @ d:
+            while loss_new > loss + c1 * alpha * np.dot(g.flatten(), d.flatten()):
                 alpha = tau * alpha
                 w_new = w + alpha * d
                 loss_new = problem.compute_f(X, y, w_new)

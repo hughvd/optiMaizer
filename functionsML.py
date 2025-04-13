@@ -91,9 +91,10 @@ def logistic_regression_func(X, y, w):
         loss: The logistic regression loss.
     """
     logits = X @ w
-    probabilities = 1 / (1 + np.exp(-logits))
-    loss = -np.mean(y * np.log(probabilities) + (1 - y) * np.log(1 - probabilities))
+    # Use logaddexp for numerical stability
+    loss = np.mean(np.logaddexp(0, -y * logits))
     return loss
+
 
 def logistic_regression_grad(X, y, w):
     """Compute the logistic regression gradient.
@@ -107,8 +108,9 @@ def logistic_regression_grad(X, y, w):
         gradient: The gradient of the loss with respect to w.
     """
     logits = X @ w
-    probabilities = 1 / (1 + np.exp(-logits))
-    gradient = X.T @ (probabilities - y) / len(y)
+    sigmoid_term = -y / (1 + np.exp(y * logits))
+    gradient = X.T @ sigmoid_term / len(y)
+
     return gradient
 
 
@@ -125,7 +127,11 @@ def logistic_regression_func_grad(X, y, w):
         gradient: The gradient of the loss with respect to w.
     """
     logits = X @ w
-    probabilities = 1 / (1 + np.exp(-logits))
-    loss = -np.mean(y * np.log(probabilities) + (1 - y) * np.log(1 - probabilities))
-    gradient = X.T @ (probabilities - y) / len(y)
+    # Use logaddexp for numerical stability
+    loss = np.mean(np.logaddexp(0, -y * logits))
+    
+    # Avoid direct calculation of exp(-y*logits)
+    sigmoid_term = -y / (1 + np.exp(y * logits))
+    gradient = X.T @ sigmoid_term / len(y)
+
     return loss, gradient

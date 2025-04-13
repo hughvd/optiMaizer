@@ -41,8 +41,8 @@ def optSolver(problem, method, options):
             'grad_evals': [],
             'train_loss': [],
             'test_loss': [],
-            'train_accuracy': [],
-            'test_accuracy': []
+            'train_acc': [],
+            'test_acc': []
         }
 
     # Get data
@@ -61,7 +61,7 @@ def optSolver(problem, method, options):
     if method.name == "StochasticGradient":
         # Use given batch size, otherwise use 1
         if "batch_size" in method.options:
-            batch_size = method.options.batch_size
+            batch_size = method.options['batch_size']
         else:
             batch_size = 1
     elif method.name == "GradientDescent":
@@ -82,8 +82,8 @@ def optSolver(problem, method, options):
         history["grad_evals"].append(0)
         history["train_loss"].append(problem.compute_f(X_train, y_train, w))
         history["test_loss"].append(problem.compute_f(X_test, y_test, w))
-        history["train_accuracy"].append(np.mean(problem.predict(X_train, w == y_train)))
-        history["test_accuracy"].append(np.mean(problem.predict(X_test, w == y_test)))
+        history["train_acc"].append(np.mean(problem.predict(X_train, w) == y_train))
+        history["test_acc"].append(np.mean(problem.predict(X_test, w) == y_test))
 
     # set initial gradient evaluation counter
     k = 0
@@ -107,28 +107,27 @@ def optSolver(problem, method, options):
             case _:
                 raise ValueError("method is not implemented yet")
 
-
         # Store for plotting
         if record:
             # Record initial stats
             history["grad_evals"].append(k)
             history["train_loss"].append(problem.compute_f(X_train, y_train, w))
             history["test_loss"].append(problem.compute_f(X_test, y_test, w))
-            history["train_accuracy"].append(np.mean(problem.predict(X_train, w == y_train)))
-            history["test_accuracy"].append(np.mean(problem.predict(X_test, w == y_test)))
+            history["train_acc"].append(np.mean(problem.predict(X_train, w) == y_train))
+            history["test_acc"].append(np.mean(problem.predict(X_test, w) == y_test))
 
     # Compute final training loss
     train_loss = problem.compute_f(X_train, y_train, w)
     
     # Compute final training accuracy
-    train_accuracy = np.mean(problem.predict(X_train, w) == y_train)
+    train_acc = np.mean(problem.predict(X_train, w) == y_train)
 
     # Compute final testing loss
     test_loss = problem.compute_f(X_test, y_test, w)
 
     # Compute final testing accuracy
-    test_accuracy = np.mean(problem.predict(X_test, w) == y_test)
+    test_acc = np.mean(problem.predict(X_test, w) == y_test)
 
     # Return the final weights, final training loss, final training accuracy,
     #   final testing loss, final testing accuracy
-    return w, train_loss, train_accuracy, test_loss, test_accuracy, history
+    return w, train_loss, train_acc, test_loss, test_acc, history
