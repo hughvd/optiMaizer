@@ -1,38 +1,78 @@
-""" IOE 511/MATH 562, University of Michigan
+"""IOE 511/MATH 562, University of Michigan
 Code template provided by: Albert S. Berahas & Jiahao Shi
 Implemented by: Hugh Van Deventer
 """
+
 import numpy as np
 import scipy
+
 
 def compute_step_size(x, d, f, g, problem, method):
     """Computes step size based on specified method"""
     match method.options["step_type"]:
         case "Constant":
-            alpha = method.options["constant_step_size"]
+            alpha = method.options["alpha"]
         case "Backtracking":
             # Get params
             alpha = method.options["alpha"]
             tau = method.options["tau"]
-            c1 = method.options["c1"]
-            
+            c1 = method.options["c_1_ls"]
+
             # Initial step
             x_new = x + alpha * d
             f_new = problem.compute_f(x_new)
-            
+
             # Backtracking
             while f_new > f + c1 * alpha * g @ d:
                 alpha = tau * alpha
                 x_new = x + alpha * d
                 f_new = problem.compute_f(x_new)
-                
+
                 # Break if step size becomes too small
                 if alpha < 1e-10:
                     break
+        case "Wolfe":
+            # Strong wolfe line search
+            # Line search parameters
+            c1 = method.options["c_1_ls"]
+            c2 = method.options["c_2_ls"]
+
+            # Subroutine parameters
+            if "alpha_low" in method.options:
+                alpha_low = method.options["alpha_low"]
+            else:
+                alpha_low = 0
+            if "alpha_high" in method.options:
+                alpha_high = method.options["alpha_high"]
+            else:
+                alpha_high = 1000
+            if "alpha" in method.options:
+                alpha = method.options["alpha"]
+            else:
+                alpha_ = 1
+            if "c" in method.options:
+                c = method.options["c"]
+            else:
+                c = 0.5
+
+            while True:
+                x_new = x + alpha * d
+                # Sufficient decrease condition
+                if problem.compute_f(x_new) <= f + c1 * alpha * g.T @ d:
+                    # Curvature condition
+                    if problem.compute_g(x_new).T @ d >= c2 * g.T @ d:
+                        break
+                    else:
+                        alpha_l = alpha
+                else:
+                    alpha_h = alpha
+                alpha = c * alpha_l + (1 - c) * alpha_h
+
         case _:
             raise ValueError("step type is not defined")
-    
+
     return alpha
+
 
 def GDStep(x, f, g, problem, method, options):
     """Function that: (1) computes the GD step; (2) updates the iterate; and,
@@ -56,13 +96,14 @@ def GDStep(x, f, g, problem, method, options):
 
     return x_new, f_new, g_new, d, alpha
 
+
 def NewtonStep(x, f, g, H, problem, method, options):
-    """Function that: (1) computes the Newton step; (2) updates the iterate; and, 
+    """Function that: (1) computes the Newton step; (2) updates the iterate; and,
         (3) computes the function and gradient at the new iterate
-        
+
     Inputs:
         x, f, g, H, problem, method, options
-    Outputs: 
+    Outputs:
         x_new, f_new, g_new, H_new, d, alpha
     """
     # Compute Newton direction by solving Hd = -g
@@ -71,30 +112,31 @@ def NewtonStep(x, f, g, H, problem, method, options):
     except np.linalg.LinAlgError:
         # If Hessian is singular, fall back to gradient descent
         d = -g
-    
+
     # Compute step size
     alpha = compute_step_size(x, d, f, g, problem, method)
-    
+
     # Update
     x_new = x + alpha * d
     f_new = problem.compute_f(x_new)
     g_new = problem.compute_g(x_new)
     H_new = problem.compute_H(x_new)
-    
+
     return x_new, f_new, g_new, H_new, d, alpha
 
+
 def ModifiedNewtonStep(x, f, g, H, problem, method, options):
-    """Function that: (1) computes the modified Newton step; (2) updates the iterate; and, 
+    """Function that: (1) computes the modified Newton step; (2) updates the iterate; and,
         (3) computes the function and gradient at the new iterate
-        
+
     Inputs:
         x, f, g, H, problem, method, options
-    Outputs: 
+    Outputs:
         x_new, f_new, g_new, H_new, d, alpha
     """
     # Compute PSD Hessian
     n = H.shape[0]
-    beta = method.options['beta']
+    beta = method.options["beta"]
 
     # Initialize eta
     min_diag = np.min(np.diag(H))
@@ -102,17 +144,17 @@ def ModifiedNewtonStep(x, f, g, H, problem, method, options):
         eta = 0
     else:
         eta = -min_diag + beta
-    
+
     # Cholesky Factorization
     max_iterations = 1000
     success = False
     for k in range(max_iterations):
-         # Attempt Cholesky factorization of H + eta*I
+        # Attempt Cholesky factorization of H + eta*I
         try:
             # Add eta*I to H
             H_mod = H.copy()
             H_mod[np.diag_indices(n)] += eta
-            
+
             # Cholesky factorization
             L = scipy.linalg.cholesky(H_mod, lower=True, check_finite=False)
             if eta != 0:
@@ -120,39 +162,42 @@ def ModifiedNewtonStep(x, f, g, H, problem, method, options):
             # If successful, break
             success = True
             break
-        
+
         except scipy.linalg.LinAlgError:
             # Step 8: Increase eta
-            eta = max(2*eta, beta)
+            eta = max(2 * eta, beta)
 
     # Check if we successfully computed the cholesky factorization
     if not success:
-        raise RuntimeError(f"Failed to compute Cholesky factorization after {max_iterations} iterations")
+        raise RuntimeError(
+            f"Failed to compute Cholesky factorization after {max_iterations} iterations"
+        )
 
     # Compute the Newton direction using LL^T with forward/backward subsitution
-    # Solve L*y = -g for y 
+    # Solve L*y = -g for y
     y = scipy.linalg.solve_triangular(L, -g, lower=True)
     # Solve L.T*d = y for d
     d = scipy.linalg.solve_triangular(L.T, y, lower=False)
-    
+
     # Compute step size
     alpha = compute_step_size(x, d, f, g, problem, method)
-    
+
     # Update
     x_new = x + alpha * d
     f_new = problem.compute_f(x_new)
     g_new = problem.compute_g(x_new)
     H_new = problem.compute_H(x_new)
-    
+
     return x_new, f_new, g_new, H_new, d, alpha
 
+
 def BFGSStep(x, f, g, H, n_skipped, problem, method, options):
-    """Function that: (1) computes the BFGS step; (2) updates the iterate; and, 
+    """Function that: (1) computes the BFGS step; (2) updates the iterate; and,
         (3) computes the function and gradient at the new iterate
     *Note: This function uses the BFGS formula to update the inverse Hessian H
     Inputs:
         x, f, g, H, problem, method, options
-    Outputs: 
+    Outputs:
         x_new, f_new, g_new, H_new, d, alpha
     """
     # Compute search direction (H is now the inverse Hessian)
@@ -169,23 +214,26 @@ def BFGSStep(x, f, g, H, n_skipped, problem, method, options):
     # Update Hessian with BFGS formula
     s = x_new - x
     y = g_new - g
-    if s @ y > method.options['epsilon_sy']*np.linalg.norm(s)*np.linalg.norm(y):
+    if s @ y > method.options["epsilon_sy"] * np.linalg.norm(s) * np.linalg.norm(y):
         rho = 1 / (s @ y)
         I = np.eye(len(x))
-        H_new = (I - rho * np.outer(s, y)) @ H @ (I - rho * np.outer(y, s)) + rho * np.outer(s, s)
+        H_new = (I - rho * np.outer(s, y)) @ H @ (
+            I - rho * np.outer(y, s)
+        ) + rho * np.outer(s, s)
     else:
         H_new = H
         n_skipped += 1
 
     return x_new, f_new, g_new, H_new, d, alpha, n_skipped
 
+
 def L_BFGSStep(x, f, g, s_list, y_list, n_skipped, problem, method, options):
-    """Function that: (1) computes the L-BFGS step; (2) updates the iterate; and, 
+    """Function that: (1) computes the L-BFGS step; (2) updates the iterate; and,
         (3) computes the function and gradient at the new iterate
-        
+
     Inputs:
         x, f, g, H, problem, method, options
-    Outputs: 
+    Outputs:
         x_new, f_new, g_new, H_new, d, alpha
     """
     # L-BFGS update
@@ -193,7 +241,7 @@ def L_BFGSStep(x, f, g, s_list, y_list, n_skipped, problem, method, options):
     alpha = np.zeros(len(s_list))
 
     # First loop - most recent to oldest (backward)
-    for i in range(len(s_list)-1, -1, -1):
+    for i in range(len(s_list) - 1, -1, -1):
         rho_i = 1.0 / (s_list[i] @ y_list[i])
         alpha[i] = rho_i * (s_list[i] @ q)
         q -= alpha[i] * y_list[i]
@@ -221,10 +269,20 @@ def L_BFGSStep(x, f, g, s_list, y_list, n_skipped, problem, method, options):
     s = x_new - x
     y = g_new - g
 
-    if s @ y >= method.options['epsilon_sy']*np.linalg.norm(s)*np.linalg.norm(y):
+    if s @ y >= method.options["epsilon_sy"] * np.linalg.norm(s) * np.linalg.norm(y):
         s_list.append(s)
         y_list.append(y)
     else:
         n_skipped += 1
 
     return x_new, f_new, g_new, d, alpha, n_skipped
+
+
+# DFP
+
+# Trust region methods
+
+# TRNewtonCG
+
+
+# TRSR1CG
