@@ -92,8 +92,14 @@ def ConjugateGradientSubproblem(f, g, H, problem, method):
 
         # Concave case
         if p.T @ B @ p <= 0:
-            # TODO: Find τ such that dk = zj + τ pj minimizes mk (dk ) and satisfies ‖dk ‖ = ∆k
-            return
+            # solve ||z + τ p|| = Δ
+            p_norm_sq = p.T @ p
+            z_p = z.T @ p
+            rad = np.sqrt(
+                z_p**2 - p_norm_sq * (z.T @ z - method.options["region_size"] ** 2)
+            )
+            tau = (-z_p + rad) / p_norm_sq
+            return z + tau * p
 
         alpha = (r.T @ r) / (p.T @ B @ p)
 
@@ -101,10 +107,16 @@ def ConjugateGradientSubproblem(f, g, H, problem, method):
 
         # If outside of region
         if np.sqrt(z_new.T @ z_new) >= method.options["region_size"]:
-            # TODO: Find τ such that dk = zj + τ pj minimizes mk (dk ) and satisfies ‖dk ‖ = ∆k
-            return
+            # solve ||z + τ p|| = Δ
+            p_norm_sq = p.T @ p
+            z_p = z.T @ p
+            rad = np.sqrt(
+                z_p**2 - p_norm_sq * (z.T @ z - method.options["region_size"] ** 2)
+            )
+            tau = (-z_p + rad) / p_norm_sq
+            return z + tau * p
 
-        r_new += alpha * B @ p
+        r_new = r + alpha * B @ p
 
         if np.sqrt(r_new.T @ r_new) <= method.options["term_tol_CG"]:
             return z_new
@@ -372,13 +384,6 @@ def TRNewtonStep(x, f, g, H, problem, method, options):
     Outputs:
         x_new, f_new, g_new, H_new, d, alpha
     """
-    # Compute Newton direction by solving Hd = -g
-    try:
-        d = np.linalg.solve(H, -g)
-    except np.linalg.LinAlgError:
-        # If Hessian is singular, fall back to gradient descent
-        d = -g
-
     # Solve TR subproblem
     d = ConjugateGradientSubproblem(f, g, H, problem, method)
 
@@ -406,7 +411,7 @@ def TRNewtonStep(x, f, g, H, problem, method, options):
 
 
 # TRSR1CG
-def TRSR1Step(x, f, g, s_list, y_list, n_skipped, problem, method, options):
+def TRSR1Step(x, f, g, H, Delta, n_skipped, problem, method, options):
     """Function that: (1) computes the TR Newton step; (2) updates the iterate; and,
         (3) computes the function and gradient at the new iterate
 
@@ -415,18 +420,11 @@ def TRSR1Step(x, f, g, s_list, y_list, n_skipped, problem, method, options):
     Outputs:
         x_new, f_new, g_new, H_new, d, alpha
     """
-    # Compute Newton direction by solving Hd = -g
-    try:
-        d = np.linalg.solve(H, -g)
-    except np.linalg.LinAlgError:
-        # If Hessian is singular, fall back to gradient descent
-        d = -g
-
     # Solve TR subproblem
     d = ConjugateGradientSubproblem(f, g, H, problem, method)
 
     # Compute actual vs prediction reduction ratio
-    rho = (f - problem.compute_f(x + d)) / (f - (f + g @ d + 0.5 * d.T @ H @ d))
+    rho = (f - problem.compute_f(x + d)) / (-(g.T @ d + 0.5 * d.T @ H @ d))
 
     # Check if the step is acceptable
     if rho > method.options["c_1_tr"]:
@@ -435,16 +433,26 @@ def TRSR1Step(x, f, g, s_list, y_list, n_skipped, problem, method, options):
         f_new = problem.compute_f(x_new)
         g_new = problem.compute_g(x_new)
 
-        # TODO: Update Hessian with SR1 formula
-        H_new = problem.compute_H(x_new)
+        y = g_new - g
+        # remember s = d
+        # Check if we can update  Hessian
+        yHd = y - H @ d
+        if d.T @ (yHd) > method.options["epsilon_sy"] * np.linalg.norm(
+            d
+        ) * np.linalg.norm(yHd):
+            # Update Hessian with SR1 formula
+            H_new = H + np.outer(yHd, yHd) / (yHd.T @ d)
+        else:
+            H_new = H
+            n_skipped += 1
 
         # Update trust region radius
         if rho > method.options["c_2_tr"]:
             Delta = 2 * Delta
 
-        return x_new, f_new, g_new, H_new, d, Delta
+        return x_new, f_new, g_new, H_new, Delta, n_skipped
     else:
         # Reject the step and reduce the trust region radius
         Delta = 0.5 * Delta
 
-    return x, f, g, H, d, Delta
+    return x, f, g, H, Delta, n_skipped
