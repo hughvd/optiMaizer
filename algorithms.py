@@ -6,6 +6,8 @@ Implemented by: Hugh Van Deventer
 import numpy as np
 import scipy
 
+# Helpers
+
 
 def compute_step_size(x, d, f, g, problem, method):
     """Computes step size based on specified method"""
@@ -72,6 +74,52 @@ def compute_step_size(x, d, f, g, problem, method):
             raise ValueError("step type is not defined")
 
     return alpha
+
+
+def ConjugateGradientSubproblem(f, g, H, problem, method):
+    """Computes the conjugate gradient subproblem"""
+    # Initialize variables
+    z = np.zeros_like(g)
+    r = g.copy()
+    p = -g.copy()
+    B = H.copy()
+
+    # Initial check
+    if np.sqrt(r.T @ r) < method.options["term_tol_CG"]:
+        return z
+
+    for _ in range(len(g)):
+
+        # Concave case
+        if p.T @ B @ p <= 0:
+            # TODO: Find τ such that dk = zj + τ pj minimizes mk (dk ) and satisfies ‖dk ‖ = ∆k
+            return
+
+        alpha = (r.T @ r) / (p.T @ B @ p)
+
+        z_new = z + alpha * p
+
+        # If outside of region
+        if np.sqrt(z_new.T @ z_new) >= method.options["region_size"]:
+            # TODO: Find τ such that dk = zj + τ pj minimizes mk (dk ) and satisfies ‖dk ‖ = ∆k
+            return
+
+        r_new += alpha * B @ p
+
+        if np.sqrt(r_new.T @ r_new) <= method.options["term_tol_CG"]:
+            return z_new
+
+        beta = (r_new.T @ r_new) / (r.T @ r)
+        p = -r_new + beta * p
+
+        # Setting variables for next ieration
+        r = r_new
+        z = z_new
+
+    return z
+
+
+# Descent methods
 
 
 def GDStep(x, f, g, problem, method, options):
@@ -279,10 +327,124 @@ def L_BFGSStep(x, f, g, s_list, y_list, n_skipped, problem, method, options):
 
 
 # DFP
+def DFPStep(x, f, g, H, problem, method, options):
+    """Function that: (1) computes the DFP step; (2) updates the iterate; and,
+        (3) computes the function and gradient at the new iterate
+
+    Inputs:
+        x, f, g, H, problem, method, options
+    Outputs:
+        x_new, f_new, g_new, H_new, d, alpha
+    """
+    # Compute search direction (H is now the inverse Hessian)
+    d = -H @ g
+
+    # Compute step size
+    alpha = compute_step_size(x, d, f, g, problem, method)
+
+    # Update
+    x_new = x + alpha * d
+    f_new = problem.compute_f(x_new)
+    g_new = problem.compute_g(x_new)
+
+    # Update Hessian with DFP formula
+    s = x_new - x
+    y = g_new - g
+    if s @ y > method.options["epsilon_sy"] * np.linalg.norm(s) * np.linalg.norm(y):
+        rho = 1 / (s @ y)
+        H_new = H + (rho * np.outer(s, s)) - (H @ np.outer(y, y) @ H / np.dot(y, H @ y))
+    else:
+        H_new = H
+
+    return x_new, f_new, g_new, H_new, d, alpha
+
 
 # Trust region methods
 
+
 # TRNewtonCG
+def TRNewtonStep(x, f, g, H, problem, method, options):
+    """Function that: (1) computes the TR Newton step; (2) updates the iterate; and,
+        (3) computes the function and gradient at the new iterate
+
+    Inputs:
+        x, f, g, H, problem, method, options
+    Outputs:
+        x_new, f_new, g_new, H_new, d, alpha
+    """
+    # Compute Newton direction by solving Hd = -g
+    try:
+        d = np.linalg.solve(H, -g)
+    except np.linalg.LinAlgError:
+        # If Hessian is singular, fall back to gradient descent
+        d = -g
+
+    # Solve TR subproblem
+    d = ConjugateGradientSubproblem(f, g, H, problem, method)
+
+    # Compute actual vs prediction reduction ratio
+    rho = (f - problem.compute_f(x + d)) / (f - (f + g @ d + 0.5 * d.T @ H @ d))
+
+    # Check if the step is acceptable
+    if rho > method.options["c_1_tr"]:
+        # Accept the step
+        x_new = x + d
+        f_new = problem.compute_f(x_new)
+        g_new = problem.compute_g(x_new)
+        H_new = problem.compute_H(x_new)
+
+        # Update trust region radius
+        if rho > method.options["c_2_tr"]:
+            Delta = 2 * Delta
+
+        return x_new, f_new, g_new, H_new, d, Delta
+    else:
+        # Reject the step and reduce the trust region radius
+        Delta = 0.5 * Delta
+
+    return x, f, g, H, d, Delta
 
 
 # TRSR1CG
+def TRSR1Step(x, f, g, s_list, y_list, n_skipped, problem, method, options):
+    """Function that: (1) computes the TR Newton step; (2) updates the iterate; and,
+        (3) computes the function and gradient at the new iterate
+
+    Inputs:
+        x, f, g, H, problem, method, options
+    Outputs:
+        x_new, f_new, g_new, H_new, d, alpha
+    """
+    # Compute Newton direction by solving Hd = -g
+    try:
+        d = np.linalg.solve(H, -g)
+    except np.linalg.LinAlgError:
+        # If Hessian is singular, fall back to gradient descent
+        d = -g
+
+    # Solve TR subproblem
+    d = ConjugateGradientSubproblem(f, g, H, problem, method)
+
+    # Compute actual vs prediction reduction ratio
+    rho = (f - problem.compute_f(x + d)) / (f - (f + g @ d + 0.5 * d.T @ H @ d))
+
+    # Check if the step is acceptable
+    if rho > method.options["c_1_tr"]:
+        # Accept the step
+        x_new = x + d
+        f_new = problem.compute_f(x_new)
+        g_new = problem.compute_g(x_new)
+
+        # TODO: Update Hessian with SR1 formula
+        H_new = problem.compute_H(x_new)
+
+        # Update trust region radius
+        if rho > method.options["c_2_tr"]:
+            Delta = 2 * Delta
+
+        return x_new, f_new, g_new, H_new, d, Delta
+    else:
+        # Reject the step and reduce the trust region radius
+        Delta = 0.5 * Delta
+
+    return x, f, g, H, d, Delta
