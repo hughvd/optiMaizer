@@ -76,7 +76,7 @@ def compute_step_size(x, d, f, g, problem, method):
     return alpha
 
 
-def ConjugateGradientSubproblem(f, g, H, problem, method):
+def ConjugateGradientSubproblem(f, g, H, Delta, problem, method):
     """Computes the conjugate gradient subproblem"""
     # Initialize variables
     z = np.zeros_like(g)
@@ -95,9 +95,7 @@ def ConjugateGradientSubproblem(f, g, H, problem, method):
             # solve ||z + τ p|| = Δ
             p_norm_sq = p.T @ p
             z_p = z.T @ p
-            rad = np.sqrt(
-                z_p**2 - p_norm_sq * (z.T @ z - method.options["region_size"] ** 2)
-            )
+            rad = np.sqrt(z_p**2 - p_norm_sq * (z.T @ z - Delta**2))
             tau = (-z_p + rad) / p_norm_sq
             return z + tau * p
 
@@ -106,13 +104,11 @@ def ConjugateGradientSubproblem(f, g, H, problem, method):
         z_new = z + alpha * p
 
         # If outside of region
-        if np.sqrt(z_new.T @ z_new) >= method.options["region_size"]:
+        if np.sqrt(z_new.T @ z_new) >= Delta:
             # solve ||z + τ p|| = Δ
             p_norm_sq = p.T @ p
             z_p = z.T @ p
-            rad = np.sqrt(
-                z_p**2 - p_norm_sq * (z.T @ z - method.options["region_size"] ** 2)
-            )
+            rad = np.sqrt(z_p**2 - p_norm_sq * (z.T @ z - Delta**2))
             tau = (-z_p + rad) / p_norm_sq
             return z + tau * p
 
@@ -154,7 +150,7 @@ def GDStep(x, f, g, problem, method, options):
     f_new = problem.compute_f(x_new)
     g_new = problem.compute_g(x_new)
 
-    return x_new, f_new, g_new, d, alpha
+    return x_new, f_new, g_new
 
 
 def NewtonStep(x, f, g, H, problem, method, options):
@@ -182,7 +178,7 @@ def NewtonStep(x, f, g, H, problem, method, options):
     g_new = problem.compute_g(x_new)
     H_new = problem.compute_H(x_new)
 
-    return x_new, f_new, g_new, H_new, d, alpha
+    return x_new, f_new, g_new, H_new
 
 
 def ModifiedNewtonStep(x, f, g, H, problem, method, options):
@@ -248,7 +244,7 @@ def ModifiedNewtonStep(x, f, g, H, problem, method, options):
     g_new = problem.compute_g(x_new)
     H_new = problem.compute_H(x_new)
 
-    return x_new, f_new, g_new, H_new, d, alpha
+    return x_new, f_new, g_new, H_new
 
 
 def BFGSStep(x, f, g, H, n_skipped, problem, method, options):
@@ -284,7 +280,7 @@ def BFGSStep(x, f, g, H, n_skipped, problem, method, options):
         H_new = H
         n_skipped += 1
 
-    return x_new, f_new, g_new, H_new, d, alpha, n_skipped
+    return x_new, f_new, g_new, H_new, n_skipped
 
 
 def L_BFGSStep(x, f, g, s_list, y_list, n_skipped, problem, method, options):
@@ -335,7 +331,7 @@ def L_BFGSStep(x, f, g, s_list, y_list, n_skipped, problem, method, options):
     else:
         n_skipped += 1
 
-    return x_new, f_new, g_new, d, alpha, n_skipped
+    return x_new, f_new, g_new, n_skipped
 
 
 # DFP
@@ -368,24 +364,24 @@ def DFPStep(x, f, g, H, problem, method, options):
     else:
         H_new = H
 
-    return x_new, f_new, g_new, H_new, d, alpha
+    return x_new, f_new, g_new, H_new
 
 
 # Trust region methods
 
 
 # TRNewtonCG
-def TRNewtonStep(x, f, g, H, problem, method, options):
+def TRNewtonStep(x, f, g, H, Delta, problem, method, options):
     """Function that: (1) computes the TR Newton step; (2) updates the iterate; and,
         (3) computes the function and gradient at the new iterate
 
     Inputs:
         x, f, g, H, problem, method, options
     Outputs:
-        x_new, f_new, g_new, H_new, d, alpha
+        x_new, f_new, g_new, H_new, d, Delta
     """
     # Solve TR subproblem
-    d = ConjugateGradientSubproblem(f, g, H, problem, method)
+    d = ConjugateGradientSubproblem(f, g, H, Delta, problem, method)
 
     # Compute actual vs prediction reduction ratio
     rho = (f - problem.compute_f(x + d)) / (f - (f + g @ d + 0.5 * d.T @ H @ d))
@@ -402,12 +398,12 @@ def TRNewtonStep(x, f, g, H, problem, method, options):
         if rho > method.options["c_2_tr"]:
             Delta = 2 * Delta
 
-        return x_new, f_new, g_new, H_new, d, Delta
+        return x_new, f_new, g_new, H_new, Delta
     else:
         # Reject the step and reduce the trust region radius
         Delta = 0.5 * Delta
 
-    return x, f, g, H, d, Delta
+    return x, f, g, H, Delta
 
 
 # TRSR1CG
@@ -418,10 +414,10 @@ def TRSR1Step(x, f, g, H, Delta, n_skipped, problem, method, options):
     Inputs:
         x, f, g, H, problem, method, options
     Outputs:
-        x_new, f_new, g_new, H_new, d, alpha
+        x_new, f_new, g_new, H_new, Delta, n_skipped
     """
     # Solve TR subproblem
-    d = ConjugateGradientSubproblem(f, g, H, problem, method)
+    d = ConjugateGradientSubproblem(f, g, H, Delta, problem, method)
 
     # Compute actual vs prediction reduction ratio
     rho = (f - problem.compute_f(x + d)) / (-(g.T @ d + 0.5 * d.T @ H @ d))

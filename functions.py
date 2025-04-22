@@ -173,7 +173,7 @@ def f3_grad(x):
         g = nabla f(x)
     """
     grad = np.zeros(len(x))
-    grad[0] = 2 * np.exp(x[0]) / ((np.exp(0) + 1.0) ** 2) - 0.1 * np.exp(-x[0])
+    grad[0] = 2 * np.exp(x[0]) / ((np.exp(x[0]) + 1.0) ** 2) - 0.1 * np.exp(-x[0])
     for i in range(1, len(x)):
         grad[i] = 4 * (x[i] - 1.0) ** 3
     return grad
@@ -194,4 +194,3 @@ def f3_Hess(x):
     for i in range(1, len(x)):
         H[i, i] = 12 * (x[i] - 1.0) ** 2
     return H
-
