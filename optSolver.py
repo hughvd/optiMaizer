@@ -296,7 +296,7 @@ def optSolverML(problem, method, options):
 
 ################# Constrained Optimization ################################################
 
-import algorithmsConst as algorithms
+import algorithmsConst
 
 
 def normGradLagrangian(x, lam, problem):
@@ -384,7 +384,7 @@ def optSolverConst(problem, method, options):
     ) and k < options.max_iterations:
         match method.name:
             case "QuadraticPenalty":
-                x, f, num_inner_iters = algorithms.QuadPenaltyStep(
+                x, f, num_inner_iters = algorithmsConst.QuadPenaltyStep(
                     x, nu, problem, method, options
                 )
                 # Compute new gradient and Jacobian
