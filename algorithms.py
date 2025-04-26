@@ -36,26 +36,14 @@ def compute_step_size(x, d, f, g, problem, method):
         case "Wolfe":
             # Strong wolfe line search
             # Line search parameters
-            c1 = method.options["c_1_ls"]
-            c2 = method.options["c_2_ls"]
+            c1 = method.options.get("c_1_ls", 1e-4)
+            c2 = method.options.get("c_2_ls", 0.9)
 
             # Subroutine parameters
-            if "alpha_low" in method.options:
-                alpha_low = method.options["alpha_low"]
-            else:
-                alpha_low = 0
-            if "alpha_high" in method.options:
-                alpha_high = method.options["alpha_high"]
-            else:
-                alpha_high = 1000
-            if "alpha" in method.options:
-                alpha = method.options["alpha"]
-            else:
-                alpha_ = 1
-            if "c" in method.options:
-                c = method.options["c"]
-            else:
-                c = 0.5
+            alpha_low = method.options.get("alpha_low", 0)
+            alpha_high = method.options.get("alpha_high", 1000)
+            alpha = method.options.get("alpha", 1)
+            c = method.options.get("c", 0.5)
 
             while True:
                 x_new = x + alpha * d
@@ -65,10 +53,10 @@ def compute_step_size(x, d, f, g, problem, method):
                     if problem.compute_g(x_new).T @ d >= c2 * g.T @ d:
                         break
                     else:
-                        alpha_l = alpha
+                        alpha_low = alpha
                 else:
-                    alpha_h = alpha
-                alpha = c * alpha_l + (1 - c) * alpha_h
+                    alpha_high = alpha
+                alpha = c * alpha_low + (1 - c) * alpha_high
 
         case _:
             raise ValueError("step type is not defined")
