@@ -2,6 +2,7 @@
 # Code written by: Albert S. Berahas & Jiahao Shi
 
 import numpy as np
+import os
 import scipy.stats as stats
 import scipy.sparse as sparse
 import scipy.io
@@ -27,22 +28,21 @@ def quad_10_10_func(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(10, 1))
-
-    mat = scipy.io.loadmat("quad_10_10_Q.mat")
-    Q = mat["Q"]
+    q = np.random.normal(size=10)
+    mat = scipy.io.loadmat("project/problems/quad_10_10_Q.mat")
+    Q = mat["Q"].toarray()
 
     # compute function value
-    return (1 / 2 * x.T @ Q @ x + q.T @ x)[0]
+    return 0.5 * x.T @ Q @ x + q.T @ x
 
 
 def quad_10_10_grad(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(10, 1))
-    mat = scipy.io.loadmat("quad_10_10_Q.mat")
-    Q = mat["Q"]
+    q = np.random.normal(size=10)
+    mat = scipy.io.loadmat("project/problems/quad_10_10_Q.mat")
+    Q = mat["Q"].toarray()
 
     return Q @ x + q
 
@@ -51,9 +51,9 @@ def quad_10_10_Hess(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(10, 1))
-    mat = scipy.io.loadmat("quad_10_10_Q.mat")
-    Q = mat["Q"]
+    q = np.random.normal(size=10)
+    mat = scipy.io.loadmat("project/problems/quad_10_10_Q.mat")
+    Q = mat["Q"].toarray()
 
     return Q
 
@@ -72,23 +72,23 @@ def quad_10_1000_func(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(10, 1))
+    q = np.random.normal(size=10)
 
-    mat = scipy.io.loadmat("quad_10_1000_Q.mat")
-    Q = mat["Q"]
+    mat = scipy.io.loadmat("project/problems/quad_10_1000_Q.mat")
+    Q = mat["Q"].toarray()
 
     # compute function value
-    return (1 / 2 * x.T @ Q @ x + q.T @ x)[0]
+    return 0.5 * x.T @ Q @ x + q.T @ x
 
 
 def quad_10_1000_grad(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(10, 1))
+    q = np.random.normal(size=10)
 
-    mat = scipy.io.loadmat("quad_10_1000_Q.mat")
-    Q = mat["Q"]
+    mat = scipy.io.loadmat("project/problems/quad_10_1000_Q.mat")
+    Q = mat["Q"].toarray()
 
     return Q @ x + q
 
@@ -97,10 +97,10 @@ def quad_10_1000_Hess(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(10, 1))
+    q = np.random.normal(size=10)
 
-    mat = scipy.io.loadmat("quad_10_1000_Q.mat")
-    Q = mat["Q"]
+    mat = scipy.io.loadmat("project/problems/quad_10_1000_Q.mat")
+    Q = mat["Q"].toarray()
 
     return Q
 
@@ -119,23 +119,23 @@ def quad_1000_10_func(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(1000, 1))
+    q = np.random.normal(size=1000)
 
-    mat = scipy.io.loadmat("quad_1000_10_Q.mat")
-    Q = mat["Q"]
+    mat = scipy.io.loadmat("project/problems/quad_1000_10_Q.mat")
+    Q = mat["Q"].toarray()
 
     # compute function value
-    return (1 / 2 * x.T @ Q @ x + q.T @ x)[0]
+    return 0.5 * x.T @ Q @ x + q.T @ x
 
 
 def quad_1000_10_grad(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(1000, 1))
+    q = np.random.normal(size=1000)
 
-    mat = scipy.io.loadmat("quad_1000_10_Q.mat")
-    Q = mat["Q"]
+    mat = scipy.io.loadmat("project/problems/quad_1000_10_Q.mat")
+    Q = mat["Q"].toarray()
 
     return Q @ x + q
 
@@ -144,10 +144,10 @@ def quad_1000_10_Hess(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(1000, 1))
+    q = np.random.normal(size=1000)
 
-    mat = scipy.io.loadmat("quad_1000_10_Q.mat")
-    Q = mat["Q"]
+    mat = scipy.io.loadmat("project/problems/quad_1000_10_Q.mat")
+    Q = mat["Q"].toarray()
 
     return Q
 
@@ -166,23 +166,23 @@ def quad_1000_1000_func(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(1000, 1))
+    q = np.random.normal(size=1000)
 
-    mat = scipy.io.loadmat("quad_1000_1000_Q.mat")
-    Q = mat["Q"]
+    mat = scipy.io.loadmat("project/problems/quad_1000_1000_Q.mat")
+    Q = mat["Q"].toarray()
 
     # compute function value
-    return (1 / 2 * x.T @ Q @ x + q.T @ x)[0]
+    return 0.5 * x.T @ Q @ x + q.T @ x
 
 
 def quad_1000_1000_grad(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(1000, 1))
+    q = np.random.normal(size=1000)
 
-    mat = scipy.io.loadmat("quad_1000_1000_Q.mat")
-    Q = mat["Q"]
+    mat = scipy.io.loadmat("project/problems/quad_1000_1000_Q.mat")
+    Q = mat["Q"].toarray()
 
     return Q @ x + q
 
@@ -191,15 +191,14 @@ def quad_1000_1000_Hess(x):
     # set raondom seed
     np.random.seed(0)
     # Generate random data
-    q = np.random.normal(size=(1000, 1))
+    q = np.random.normal(size=1000)
 
-    mat = scipy.io.loadmat("quad_1000_1000_Q.mat")
-    Q = mat["Q"]
+    mat = scipy.io.loadmat("project/problems/quad_1000_1000_Q.mat")
+    Q = mat["Q"].toarray()
 
     return Q
 
 
-# TODO: Finish 5
 # Problem Number: 5
 # Problem Name: quartic_1
 # Problem Description: A quartic function. Dimension n = 4
@@ -211,7 +210,7 @@ def quartic_1_func(x):
     Q = np.array([[5, 1, 0, 0.5], [1, 4, 0.5, 0], [0, 0.5, 3, 0], [0.5, 0, 0, 2]])
     sigma = 1e-4
 
-    return 1 / 2 * (x.T @ x) + sigma / 4 * (x.T @ Q @ x) ** 2
+    return 0.5 * (x.T @ x) + sigma / 4 * (x.T @ Q @ x) ** 2
 
 
 def quartic_1_grad(x):
@@ -228,8 +227,6 @@ def quartic_1_Hess(x):
     return np.eye(4) + sigma * (2 * Q @ x) @ (Q @ x).T + sigma * (x.T @ Q @ x) * Q
 
 
-# TODO: Finish 6 Derivative and Hessian
-
 # Problem Number: 6
 # Problem Name: quartic_2
 # Problem Description: A quartic function. Dimension n = 4
@@ -241,7 +238,7 @@ def quartic_2_func(x):
     Q = np.array([[5, 1, 0, 0.5], [1, 4, 0.5, 0], [0, 0.5, 3, 0], [0.5, 0, 0, 2]])
     sigma = 1e4
 
-    return 1 / 2 * (x.T @ x) + sigma / 4 * (x.T @ Q @ x) ** 2
+    return 0.5 * (x.T @ x) + sigma / 4 * (x.T @ Q @ x) ** 2
 
 
 def quartic_2_grad(x):
@@ -258,7 +255,6 @@ def quartic_2_Hess(x):
     return np.eye(4) + sigma * (2 * Q @ x) @ (Q @ x).T + sigma * (x.T @ Q @ x) * Q
 
 
-# TODO: Finish Rosenbrock function, gradient, and Hessian
 # Problem Number: 7
 # Problem Name: rosenbrock_2
 # Problem Description: The Rosenbrock function. Dimension n = 2

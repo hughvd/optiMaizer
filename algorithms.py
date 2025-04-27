@@ -18,7 +18,7 @@ def compute_step_size(x, d, f, g, problem, method):
             # Get params
             alpha = method.options["alpha"]
             tau = method.options["tau"]
-            c1 = method.options["c_1_ls"]
+            c1 = method.options.get("c_1_ls", 1e-4)
 
             # Initial step
             x_new = x + alpha * d
@@ -44,6 +44,7 @@ def compute_step_size(x, d, f, g, problem, method):
             alpha_high = method.options.get("alpha_high", 1000)
             alpha = method.options.get("alpha", 1)
             c = method.options.get("c", 0.5)
+            tol = method.options.get("alpha_tol", 1e-8)
 
             while True:
                 x_new = x + alpha * d
@@ -56,6 +57,10 @@ def compute_step_size(x, d, f, g, problem, method):
                         alpha_low = alpha
                 else:
                     alpha_high = alpha
+
+                if abs(alpha_high - alpha_low) < tol:
+                    return alpha
+
                 alpha = c * alpha_low + (1 - c) * alpha_high
 
         case _:
@@ -201,8 +206,7 @@ def ModifiedNewtonStep(x, f, g, H, problem, method, options):
 
             # Cholesky factorization
             L = scipy.linalg.cholesky(H_mod, lower=True, check_finite=False)
-            if eta != 0:
-                print("Modified Newton: Cholesky factorization successful")
+
             # If successful, break
             success = True
             break
@@ -368,75 +372,154 @@ def TRNewtonStep(x, f, g, H, Delta, problem, method, options):
     Outputs:
         x_new, f_new, g_new, H_new, d, Delta
     """
-    # Solve TR subproblem
-    d = ConjugateGradientSubproblem(f, g, H, Delta, problem, method)
+    # Load parameters
+    p = method.options
+    c1 = p.get("c_1_tr", 1e-3)  # accept if ρ > c1   (book η)
+    c2 = p.get("c_2_tr", 0.75)  # enlarge if ρ > c2  (book ¾)
+    gamma_inc = p.get("gamma_inc", 2.0)
+    gamma_dec = p.get("gamma_dec", 0.5)
+    Delta_max = p.get("Delta_max", 100.0)
 
-    # Compute actual vs prediction reduction ratio
-    rho = (f - problem.compute_f(x + d)) / (f - (f + g @ d + 0.5 * d.T @ H @ d))
+    # Solve TR subproblem
+    s = ConjugateGradientSubproblem(f, g, H, Delta, problem, method)
+
+    # Reductions
+    f_trial = problem.compute_f(x + s)
+    ared = f - f_trial
+    pred = -(g @ s + 0.5 * s @ H @ s)
+
+    # model not trustworthy, decrease radius
+    if pred <= 0:
+        Delta = max(gamma_dec * Delta, 1e-6)
+        return x, f, g, H, Delta
+
+    rho = ared / pred
 
     # Check if the step is acceptable
-    if rho > method.options["c_1_tr"]:
+    if rho > c1:
         # Accept the step
-        x_new = x + d
+        x_new = x + s
         f_new = problem.compute_f(x_new)
         g_new = problem.compute_g(x_new)
         H_new = problem.compute_H(x_new)
 
         # Update trust region radius
-        if rho > method.options["c_2_tr"]:
-            Delta = 2 * Delta
+        if rho > c2:
+            Delta = min(gamma_inc * Delta, Delta_max)
 
         return x_new, f_new, g_new, H_new, Delta
     else:
         # Reject the step and reduce the trust region radius
-        Delta = 0.5 * Delta
+        Delta = max(gamma_dec * Delta, 1e-6)
 
     return x, f, g, H, Delta
 
 
 # TRSR1CG
-def TRSR1Step(x, f, g, H, Delta, n_skipped, problem, method, options):
-    """Function that: (1) computes the TR Newton step; (2) updates the iterate; and,
-        (3) computes the function and gradient at the new iterate
-
-    Inputs:
-        x, f, g, H, problem, method, options
-    Outputs:
-        x_new, f_new, g_new, H_new, Delta, n_skipped
+def TRSR1Step(x, f, g, B, Delta, n_skipped, problem, method, options):
     """
-    # Solve TR subproblem
-    d = ConjugateGradientSubproblem(f, g, H, Delta, problem, method)
+    SR1 trust-region step that uses the SAME (c_1_tr, c_2_tr)
+    semantics as your TRNewtonStep.
+    """
 
-    # Compute actual vs prediction reduction ratio
-    rho = (f - problem.compute_f(x + d)) / (-(g.T @ d + 0.5 * d.T @ H @ d))
+    # Load parameters
+    p = method.options
+    c1 = p.get("c_1_tr", 1e-3)  # accept if ρ > c1   (book η)
+    c2 = p.get("c_2_tr", 0.75)  # enlarge if ρ > c2  (book ¾)
+    gamma_inc = p.get("gamma_inc", 2.0)
+    gamma_dec = p.get("gamma_dec", 0.5)
+    Delta_max = p.get("Delta_max", 100.0)
+    epsilon_sy = p.get("epsilon_sy", 1e-8)
+
+    # Solve TR subproblem
+    s = ConjugateGradientSubproblem(f, g, B, Delta, problem, method)
+
+    # Reductions
+    f_trial = problem.compute_f(x + s)
+    ared = f - f_trial
+    pred = -(g @ s + 0.5 * s @ B @ s)
+
+    # model not trustworthy, decrease radius
+    if pred <= 0:
+        Delta = max(gamma_dec * Delta, 1e-6)
+        return x, f, g, B, Delta, n_skipped
+
+    rho = ared / pred
 
     # Check if the step is acceptable
-    if rho > method.options["c_1_tr"]:
-        # Accept the step
-        x_new = x + d
-        f_new = problem.compute_f(x_new)
+    if rho > c1:
+        x_new = x + s
+        f_new = f_trial
         g_new = problem.compute_g(x_new)
 
+        # SR1 update with curvature safeguard
         y = g_new - g
-        # remember s = d
-        # Check if we can update  Hessian
-        yHd = y - H @ d
-        if d.T @ (yHd) > method.options["epsilon_sy"] * np.linalg.norm(
-            d
-        ) * np.linalg.norm(yHd):
-            # Update Hessian with SR1 formula
-            H_new = H + np.outer(yHd, yHd) / (yHd.T @ d)
+        yBs = y - B @ s
+        denom = s @ yBs
+
+        # Check if we can update B
+        if abs(denom) >= epsilon_sy * np.linalg.norm(s) * np.linalg.norm(yBs):
+            B_new = B + np.outer(yBs, yBs) / denom
         else:
-            H_new = H
+            B_new = B
             n_skipped += 1
 
-        # Update trust region radius
-        if rho > method.options["c_2_tr"]:
-            Delta = 2 * Delta
+        # radius update
+        if rho > c2:
+            Delta = min(gamma_inc * Delta, Delta_max)
 
-        return x_new, f_new, g_new, H_new, Delta, n_skipped
+        return x_new, f_new, g_new, B_new, Delta, n_skipped
+
+    # Reject step and reduce trust region radius
     else:
-        # Reject the step and reduce the trust region radius
-        Delta = 0.5 * Delta
+        Delta = max(gamma_dec * Delta, 1e-6)
+        return x, f, g, B, Delta, n_skipped
 
-    return x, f, g, H, Delta, n_skipped
+
+# def TRSR1Step(x, f, g, H, Delta, n_skipped, problem, method, options):
+#     """Function that: (1) computes the TR Newton step; (2) updates the iterate; and,
+#         (3) computes the function and gradient at the new iterate
+
+#     Inputs:
+#         x, f, g, H, problem, method, options
+#     Outputs:
+#         x_new, f_new, g_new, H_new, Delta, n_skipped
+#     """
+#     # Solve TR subproblem
+#     d = ConjugateGradientSubproblem(f, g, H, Delta, problem, method)
+
+#     # Compute actual vs prediction reduction ratio
+#     rho = (f - problem.compute_f(x + d)) / (-(g.T @ d + 0.5 * d.T @ H @ d))
+#     print(f"reduction: {rho}")
+#     print(f"delta: {Delta}")
+#     # Check if the step is acceptable
+#     if rho > method.options["c_1_tr"]:
+#         # Accept the step
+#         x_new = x + d
+#         f_new = problem.compute_f(x_new)
+#         g_new = problem.compute_g(x_new)
+#         print(f"norm_g {np.linalg.norm(g_new)}")
+
+#         y = g_new - g
+#         # remember s = d
+#         # Check if we can update  Hessian
+#         yHd = y - H @ d
+#         if d.T @ (yHd) > method.options["epsilon_sy"] * np.linalg.norm(
+#             d
+#         ) * np.linalg.norm(yHd):
+#             # Update Hessian with SR1 formula
+#             H_new = H + np.outer(yHd, yHd) / (yHd.T @ d)
+#         else:
+#             H_new = H
+#             n_skipped += 1
+
+#         # Update trust region radius
+#         if rho > method.options["c_2_tr"]:
+#             Delta = 2 * Delta
+
+#         return x_new, f_new, g_new, H_new, Delta, n_skipped
+#     else:
+#         # Reject the step and reduce the trust region radius
+#         Delta = 0.5 * Delta
+
+#     return x, f, g, H, Delta, n_skipped

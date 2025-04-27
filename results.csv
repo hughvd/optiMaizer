@@ -1,0 +1,121 @@
+problem,method,iterations,f_evals,grad_evals,cpu_seconds,status
+quad_10_10,GradientDescent,,,,,fail: ValueError('The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()')
+quad_10_10,GradientDescent,,,,,fail: ValueError('The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()')
+quad_10_10,ModifiedNewton,,,,,fail: ValueError('Input must be 1- or 2-d.')
+quad_10_10,ModifiedNewton,,,,,fail: ValueError('Input must be 1- or 2-d.')
+quad_10_10,TRNewtonCG,,,,,fail: ValueError('The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()')
+quad_10_10,TRSR1CG,,,,,fail: ValueError('The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()')
+quad_10_10,BFGS,,,,,fail: ValueError('The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()')
+quad_10_10,BFGS,,,,,fail: ValueError('The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()')
+quad_10_10,DFP,,,,,fail: ValueError('The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()')
+quad_10_10,DFP,,,,,fail: ValueError('The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()')
+quad_10_1000,GradientDescent,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_10_1000,GradientDescent,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_10_1000,ModifiedNewton,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_10_1000,ModifiedNewton,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_10_1000,TRNewtonCG,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_10_1000,TRSR1CG,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_10_1000,BFGS,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_10_1000,BFGS,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_10_1000,DFP,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_10_1000,DFP,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,GradientDescent,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,GradientDescent,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,ModifiedNewton,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,ModifiedNewton,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,TRNewtonCG,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,TRSR1CG,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,BFGS,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,BFGS,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,DFP,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_10,DFP,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,GradientDescent,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,GradientDescent,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,ModifiedNewton,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,ModifiedNewton,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,TRNewtonCG,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,TRSR1CG,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,BFGS,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,BFGS,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,DFP,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quad_1000_1000,DFP,,,,,"fail: FileNotFoundError(2, 'No such file or directory')"
+quartic_1,GradientDescent,2.0,5.0,3.0,0.0,ok
+quartic_1,GradientDescent,2.0,10.0,8.0,0.0,ok
+quartic_1,ModifiedNewton,2.0,15.0,11.0,0.010716676712036133,ok
+quartic_1,ModifiedNewton,2.0,20.0,16.0,0.0,ok
+quartic_1,TRNewtonCG,3.0,27.0,20.0,0.0009987354278564453,ok
+quartic_1,TRSR1CG,4.0,32.0,25.0,0.0,ok
+quartic_1,BFGS,3.0,39.0,29.0,0.0,ok
+quartic_1,BFGS,3.0,46.0,36.0,0.0010004043579101562,ok
+quartic_1,DFP,3.0,53.0,40.0,0.0,ok
+quartic_1,DFP,3.0,60.0,47.0,0.0,ok
+quartic_2,GradientDescent,6.0,94.0,7.0,0.002002239227294922,ok
+quartic_2,GradientDescent,6.0,188.0,20.0,0.0009989738464355469,ok
+quartic_2,ModifiedNewton,38.0,265.0,59.0,0.004998445510864258,ok
+quartic_2,ModifiedNewton,38.0,342.0,136.0,0.004999876022338867,ok
+quartic_2,TRNewtonCG,38.0,419.0,175.0,0.006000041961669922,ok
+quartic_2,TRSR1CG,17.0,437.0,193.0,0.0020017623901367188,ok
+quartic_2,BFGS,24.0,548.0,218.0,0.0019979476928710938,ok
+quartic_2,BFGS,24.0,659.0,267.0,0.0031273365020751953,ok
+quartic_2,DFP,32.0,860.0,300.0,0.0029990673065185547,ok
+quartic_2,DFP,1000.0,3014.0,2298.0,0.07829070091247559,ok
+rosenbrock_2,GradientDescent,1000.0,10834.0,1001.0,0.056934356689453125,ok
+rosenbrock_2,GradientDescent,1000.0,21717.0,3003.0,0.06265091896057129,ok
+rosenbrock_2,ModifiedNewton,20.0,21765.0,3024.0,0.002001523971557617,ok
+rosenbrock_2,ModifiedNewton,20.0,21813.0,3065.0,0.0009984970092773438,ok
+rosenbrock_2,TRNewtonCG,30.0,21863.0,3085.0,0.002040863037109375,ok
+rosenbrock_2,TRSR1CG,94.0,21958.0,3139.0,0.005311727523803711,ok
+rosenbrock_2,BFGS,33.0,22044.0,3173.0,0.0009975433349609375,ok
+rosenbrock_2,BFGS,33.0,22130.0,3240.0,0.0019996166229248047,ok
+rosenbrock_2,DFP,23.0,22210.0,3264.0,0.0010085105895996094,ok
+rosenbrock_2,DFP,22.0,22289.0,3310.0,0.0009932518005371094,ok
+rosenbrock_100,GradientDescent,26.0,279.0,27.0,0.02892017364501953,ok
+rosenbrock_100,GradientDescent,28.0,584.0,85.0,0.031881093978881836,ok
+rosenbrock_100,ModifiedNewton,46.0,683.0,132.0,0.029652833938598633,ok
+rosenbrock_100,ModifiedNewton,46.0,782.0,225.0,0.031507253646850586,ok
+rosenbrock_100,TRNewtonCG,1000.0,1857.0,300.0,0.19821476936340332,ok
+rosenbrock_100,TRSR1CG,1000.0,2858.0,312.0,0.13521170616149902,ok
+rosenbrock_100,BFGS,7.0,2882.0,320.0,0.00630497932434082,ok
+rosenbrock_100,BFGS,7.0,2906.0,335.0,0.006006002426147461,ok
+rosenbrock_100,DFP,1000.0,14429.0,1336.0,1.344189167022705,ok
+rosenbrock_100,DFP,1000.0,41199.0,9127.0,3.5329835414886475,ok
+datafit_2,GradientDescent,530.0,3438.0,531.0,0.029659748077392578,ok
+datafit_2,GradientDescent,530.0,6876.0,1592.0,0.03726625442504883,ok
+datafit_2,ModifiedNewton,6.0,6889.0,1599.0,0.0012094974517822266,ok
+datafit_2,ModifiedNewton,6.0,6902.0,1612.0,0.0010464191436767578,ok
+datafit_2,TRNewtonCG,7.0,6917.0,1620.0,0.0009963512420654297,ok
+datafit_2,TRSR1CG,27.0,6945.0,1637.0,0.0009961128234863281,ok
+datafit_2,BFGS,14.0,6982.0,1652.0,0.0010001659393310547,ok
+datafit_2,BFGS,14.0,7019.0,1681.0,0.0012431144714355469,ok
+datafit_2,DFP,79.0,7228.0,1761.0,0.005002260208129883,ok
+datafit_2,DFP,60.0,7400.0,1882.0,0.003998517990112305,ok
+exponential,GradientDescent,27.0,69.0,28.0,0.0010228157043457031,ok
+exponential,GradientDescent,27.0,138.0,83.0,0.0019769668579101562,ok
+exponential,ModifiedNewton,13.0,182.0,97.0,0.003008127212524414,ok
+exponential,ModifiedNewton,13.0,226.0,124.0,0.001991748809814453,ok
+exponential,TRNewtonCG,13.0,253.0,138.0,0.0010056495666503906,ok
+exponential,TRSR1CG,16.0,270.0,154.0,0.0020797252655029297,ok
+exponential,BFGS,19.0,311.0,174.0,0.0009980201721191406,ok
+exponential,BFGS,20.0,362.0,216.0,0.0019991397857666016,ok
+exponential,DFP,1000.0,36300.0,1217.0,0.3531820774078369,ok
+exponential,DFP,1000.0,65252.0,2220.0,0.295551061630249,ok
+exponential,GradientDescent,21.0,45.0,22.0,0.0020644664764404297,ok
+exponential,GradientDescent,17.0,89.0,58.0,0.0022788047790527344,ok
+exponential,ModifiedNewton,13.0,133.0,72.0,0.003999948501586914,ok
+exponential,ModifiedNewton,13.0,177.0,99.0,0.004544496536254883,ok
+exponential,TRNewtonCG,14.0,206.0,114.0,0.004235029220581055,ok
+exponential,TRSR1CG,29.0,236.0,134.0,0.0039975643157958984,ok
+exponential,BFGS,10.0,260.0,145.0,0.004220724105834961,ok
+exponential,BFGS,9.0,288.0,165.0,0.004864215850830078,ok
+exponential,DFP,1000.0,36058.0,1166.0,1.1652469635009766,ok
+exponential,DFP,1000.0,64877.0,2174.0,0.9590182304382324,ok
+genhumps_5,GradientDescent,130.0,376.0,131.0,0.008290290832519531,ok
+genhumps_5,GradientDescent,143.0,837.0,421.0,0.01320648193359375,ok
+genhumps_5,ModifiedNewton,97.0,1052.0,519.0,0.031145572662353516,ok
+genhumps_5,ModifiedNewton,40.0,1200.0,611.0,0.01449441909790039,ok
+genhumps_5,TRNewtonCG,83.0,1343.0,671.0,0.009157896041870117,ok
+genhumps_5,TRSR1CG,130.0,1474.0,751.0,0.014128923416137695,ok
+genhumps_5,BFGS,57.0,1613.0,809.0,0.005002021789550781,ok
+genhumps_5,BFGS,46.0,1744.0,905.0,0.006999969482421875,ok
+genhumps_5,DFP,1000.0,37677.0,1906.0,0.5269815921783447,ok
+genhumps_5,DFP,1000.0,66624.0,2909.0,0.45018553733825684,ok

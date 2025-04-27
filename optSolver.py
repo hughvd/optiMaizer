@@ -21,7 +21,7 @@ def optSolver(problem, method, options):
     """
 
     # Initialize history lists
-    history = {"iterations": [], "f": [], "norm_g": []}
+    history = {"iterations": [], "f": [], "norm_g": [], "n_skipped": int}
 
     # Compute initial function/gradient/Hessian
     x = problem.x0
@@ -158,7 +158,7 @@ def optSolver(problem, method, options):
         history["norm_g"].append(norm_g)
 
         k = k + 1
-    # print(f"Number of skipped steps ({method.name}): {n_skipped}")
+    history["n_skipped"] = n_skipped
     return x, f, history
 
 
