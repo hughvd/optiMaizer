@@ -21,7 +21,13 @@ def optSolver(problem, method, options):
     """
 
     # Initialize history lists
-    history = {"iterations": [], "f": [], "norm_g": [], "n_skipped": int}
+    history = {
+        "iterations": [],
+        "f": [],
+        "norm_g": [],
+        "n_skipped": int,
+        "converged": bool,
+    }
 
     # Compute initial function/gradient/Hessian
     x = problem.x0
@@ -69,12 +75,13 @@ def optSolver(problem, method, options):
     history["iterations"].append(0)
     history["f"].append(f)
     history["norm_g"].append(norm_g)
+    convergence = False
 
     # set initial iteration counter
     k = 0
     n_skipped = 0
     # Theory and max_iters tolerance
-    while norm_g > options.term_tol * tol and k < options.max_iterations:
+    while k < options.max_iterations:
         match method.name:
             case "GradientDescent":
                 x_new, f_new, g_new = algorithms.GDStep(
@@ -157,8 +164,14 @@ def optSolver(problem, method, options):
         history["f"].append(f)
         history["norm_g"].append(norm_g)
 
+        # Check for convergence
+        if norm_g < options.term_tol * tol:
+            convergence = True
+            break
+
         k = k + 1
     history["n_skipped"] = n_skipped
+    history["converged"] = convergence
     return x, f, history
 
 

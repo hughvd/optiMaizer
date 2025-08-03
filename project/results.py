@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from optSolver import optSolver
 from project.problems.project_problems import *  # your functions
-from framework import Problem, Method, Options  # wherever you defined these
+from framework import Problem, Method, Options
 
 
 def count_calls(fn, counter_dict, key):
@@ -18,7 +18,7 @@ def count_calls(fn, counter_dict, key):
     return wrapped
 
 
-# 1. Build problem list
+# Problems
 np.random.seed(0)
 deg70 = np.deg2rad(70)
 quartic_x0 = np.array([np.cos(deg70), np.sin(deg70), np.cos(deg70), np.sin(deg70)])
@@ -104,8 +104,6 @@ method_names = [
     "DFPW",
 ]
 
-# ————————————————
-# 3. Loop and collect
 records = []
 
 for prob in tqdm(problems):
@@ -116,42 +114,31 @@ for prob in tqdm(problems):
     prob.compute_f = count_calls(prob.compute_f, counters, "f_evals")
     prob.compute_g = count_calls(prob.compute_g, counters, "g_evals")
 
-    for meth in tqdm(methods):
+    for i, meth in enumerate(tqdm(methods)):
         opts = Options(term_tol=1e-6, max_iterations=1e3)
 
         t0 = time.time()
-        try:
-            x_star, f_star, history = optSolver(prob, meth, opts)
-            cpu = time.time() - t0
+        x_star, f_star, history = optSolver(prob, meth, opts)
+        cpu = time.time() - t0
 
-            iters = history["iterations"][-1]
-            fcount = counters["f_evals"]
-            gcount = counters["g_evals"]
-            status = "ok"
-
-        except Exception as e:
-            cpu, iters, fcount, gcount = None, None, None, None
-            status = f"fail: {e!r}"
+        iters = history["iterations"][-1]
+        fcount = counters["f_evals"]
+        gcount = counters["g_evals"]
+        status = history["converged"]
 
         records.append(
             {
                 "problem": prob.name,
-                "method": meth.name,
+                "method": method_names[i],
                 "iterations": iters,
                 "f_evals": fcount,
                 "grad_evals": gcount,
                 "cpu_seconds": cpu,
-                "status": status,
+                "convergence": status,
             }
         )
 
-# 4. Build DataFrame & preview
+# Save
 df = pd.DataFrame(records)
 print(df)
 df.to_csv("results.csv", index=False)
-
-# 5. (When you’re ready) pivot for your table:
-#   df_iters = df.pivot(index="problem", columns="method", values="iterations")
-#   df_f    = df.pivot(index="problem", columns="method", values="f_evals")
-#   df_g    = df.pivot(index="problem", columns="method", values="grad_evals")
-#   df_cpu  = df.pivot(index="problem", columns="method", values="cpu_seconds")
