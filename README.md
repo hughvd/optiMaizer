@@ -1,50 +1,7 @@
+
 # OptiMaizer
 
-This package provides a framework for solving optimization problems using various algorithms. This code was written for the class Math 562 / IOE 511: Continuous Optimization Methods. 
-
----
-
-## Features
-
-### Core Components
-
-1. **`optSolver`**:
-   - The main function that runs a chosen optimization algorithm on a specified problem.
-   - Inputs:
-     - `problem`: Defines the optimization problem (objective function, gradient, Hessian, etc.).
-     - `method`: Specifies the optimization algorithm and its parameters.
-     - `options`: Contains termination criteria and other settings.
-   - Outputs:
-     - Final iterate (`x`), final function value (`f`), and additional history (if applicable).
-
-2. **`algorithms.py`**:
-   - Contains implementations of various optimization algorithms, such as:
-     - Gradient Descent
-     - Newton's Method
-     - Modified Newton
-     - BFGS
-     - L-BFGS
-   - Supports different step size strategies, including backtracking line search.
-
-3. **`functions.py`**:
-   - Provides test functions, their gradients, and Hessians, including:
-     - Rosenbrock function
-     ```math
-     f(x) = (1 - x_0)^2 + 100 (x_1 - x_0^2)^2
-     ```
-     - Quadratic function
-     ```math
-     f(x) = \frac{1}{2} x^T A x - b^T x + c
-     ```
-     - Function 2
-     ```math
-     f(x) = \sum_{i=1}^{3} \left( y_i - x_0 \cdot \left( 1 - x_1^{i+1} \right) \right)^2
-     ```
-     - Function 3
-     ```math
-     f(x) = \frac{\exp(x_0) - 1}{\exp(x_0) + 1} + 0.1 \exp(-x_0) + \sum_{i=1}^{n} (x_i - 1)^4
-     ```
-
+OptiMaizer is a Python package for solving unconstrained and constrained optimization problems using a variety of classical and modern algorithms. It was developed for Math 562 / IOE 511: Continuous Optimization Methods at the University of Michigan.
 
 ---
 
@@ -54,7 +11,7 @@ Clone the repository and install the required dependencies:
 
 ```bash
 git clone <repository-url>
-cd framework_PYTHON
+cd optiMaizer
 pip install -r requirements.txt
 ```
 
@@ -62,42 +19,27 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Example Workflow
+1. **Define the Problem**: Use the `Problem` class to specify the objective, gradient, and Hessian.
+2. **Choose an Algorithm**: Select a method and configure its parameters.
+3. **Set Options**: Define termination criteria and other settings.
+4. **Run the Solver**: Call `optSolver(problem, method, options)` to solve the problem.
 
-1. **Define the Problem**:
-   Use the `Problem` class to specify the optimization problem, including the function, gradient, and Hessian.
-
-2. **Choose an Algorithm**:
-   Use the `Method` class to select an optimization algorithm and configure its parameters.
-
-3. **Set Options**:
-   Use the `Options` class to define termination criteria and other settings.
-
-4. **Run the Solver**:
-   Call `optSolver` with the problem, method, and options to solve the optimization problem.
-
-### Example Code
-
-Below is an example of how to use the package, as demonstrated in script.ipynb:
+Example:
 
 ```python
 import numpy as np
 from optSolver import optSolver
 from functions import rosen_func, rosen_grad, rosen_Hess
 
-# Define the problem
 class Problem:
-    def __init__(self, name, x0):
-        self.name = name
+    def __init__(self, x0):
         self.x0 = x0
-        if name == "Rosenbrock":
-            self.compute_f = rosen_func
-            self.compute_g = rosen_grad
-            self.compute_H = rosen_Hess
+        self.compute_f = rosen_func
+        self.compute_g = rosen_grad
+        self.compute_H = rosen_Hess
 
-problem = Problem(name="Rosenbrock", x0=np.array([1.2, 1.2]))
+problem = Problem(x0=np.array([1.2, 1.2]))
 
-# Define the method
 class Method:
     def __init__(self, name, step_type, alpha, tau, c1):
         self.name = name
@@ -108,7 +50,6 @@ class Method:
 
 method = Method(name="GradientDescent", step_type="Backtracking", alpha=1, tau=0.5, c1=1e-4)
 
-# Define options
 class Options:
     def __init__(self, term_tol=1e-6, max_iterations=100):
         self.term_tol = term_tol
@@ -116,33 +57,32 @@ class Options:
 
 options = Options(term_tol=1e-6, max_iterations=100)
 
-# Solve the problem
 x, f, _ = optSolver(problem, method, options)
-
 print("Optimal solution:", x)
 print("Optimal function value:", f)
 ```
 
 ---
 
-## File Structure
+## Main Components
 
-- **`functions.py`**: Contains test functions, gradients, and Hessians.
-- **`algorithms.py`**: Implements optimization algorithms.
-- **`optSolver.py`**: Main solver function that integrates problems, methods, and options.
-- **`script.ipynb`**: Example notebook demonstrating how to use the package.
-- **`requirements.txt`**: List of dependencies.
+- **`optSolver.py`**: Main interface for running optimization algorithms.
+- **`algorithms.py`**: Implementations of core algorithms (Gradient Descent, Newton, BFGS, L-BFGS, etc.).
+- **`functions.py`**: Standard test functions (Rosenbrock, Quadratic, and others) with gradients and Hessians.
+- **`project/`**: Scripts and results for benchmarking and experiments.
 
 ---
 
-## Dependencies
+## Performance Evaluation & Project Work
 
-- Python 3.x
-- NumPy
-- SciPy (for loading `.mat` files in examples)
+During this project, I implemented and compared a suite of optimization algorithms on a variety of test problems, including the Rosenbrock and Quadratic functions. I developed a modular framework to facilitate fair benchmarking and reproducibility. Extensive experiments were conducted to evaluate convergence speed, robustness, and efficiency of each method.
 
-Install dependencies using:
+The figure below shows a performance profile comparing the algorithms on a suite of problems:
 
-```bash
-pip install numpy scipy
-```
+![Performance Profile](project/performance_profile.png)
+
+All evaluative work, including experiment scripts and results, can be found in the `project/` directory. Homework folders (`hw2/`, `hw3/`, `hw4/`, `hw5/`) are not part of the main package and can be ignored.
+
+---
+
+**Developed by Hugh Van Deventer V and Itamar Pres**
